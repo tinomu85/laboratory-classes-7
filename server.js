@@ -11,6 +11,7 @@ const homeRoutes = require("./routing/home");
 const { STATUS_CODE } = require("./constants/statusCode");
 const { MENU_LINKS } = require("./constants/navigation");
 const cartController = require("./controllers/cartController");
+const { mongoConnect } = require("./database");
 
 const app = express();
 
@@ -31,9 +32,9 @@ app.use("/products", productsRoutes);
 app.use("/logout", logoutRoutes);
 app.use("/kill", killRoutes);
 app.use(homeRoutes);
-app.use((request, response) => {
+app.use(async (request, response) => {
   const { url } = request;
-  const cartCount = cartController.getProductsCount();
+  const cartCount = await cartController.getProductsCount();
 
   response.status(STATUS_CODE.NOT_FOUND).render("404", {
     headTitle: "404",
@@ -44,4 +45,6 @@ app.use((request, response) => {
   logger.getErrorLog(url);
 });
 
-app.listen(PORT);
+mongoConnect(() => {
+  app.listen(PORT);
+});
